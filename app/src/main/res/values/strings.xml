@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NotificationForwarder</string>
+    <string name="service_name">notification forwarder service</string>
+</resources>
