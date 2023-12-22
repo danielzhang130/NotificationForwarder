@@ -1,5 +1,6 @@
 package com.example.notificationforwarder
 
+import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -22,18 +23,15 @@ class NotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        Log.d("", "new notification " + sbn)
-
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         coroutineScope = scope
 
         with(packageManager) {
-            val title = sbn.notification.extras.getString("android.title")
-            val text = sbn.notification.extras.getString("android.text")
+            val title = sbn.notification.extras.get("android.title") ?: return
+            val text = sbn.notification.extras.get("android.text") ?: ""
 
-            @Suppress("DEPRECATION")
             val appName = getApplicationLabel(
-                getApplicationInfo(sbn.packageName, 0)
+                getApplicationInfo(sbn.packageName, PackageManager.ApplicationInfoFlags.of(0L))
             )
             val context = "Forwarded from $appName"
 
@@ -42,8 +40,8 @@ class NotificationListener : NotificationListenerService() {
                 val message: Message = Message.builder()
                     .setNotification(
                         Notification.builder()
-                            .setTitle(title)
-                            .setBody("$text\n$context")
+                            .setTitle(title.toString())
+                            .setBody("$text\n$context".trim())
                             .build()
                     )
                     .setToken(token)
